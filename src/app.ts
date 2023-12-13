@@ -12,7 +12,7 @@ configureSockets(io)
 
 app.use('/', apiRoutes)
 
-const SOCKET_PORT = process.env.SOCKET_PORT ?? 3000
+const SOCKET_PORT = process.env.PORT ?? 3000
 const API_PORT = process.env.API_PORT ?? 3001
 
 server.listen(SOCKET_PORT, () => {
