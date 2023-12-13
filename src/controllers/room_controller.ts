@@ -2,8 +2,6 @@ import { Data, redis } from '../config'
 import { Room } from '../models/room'
 import { generateCoins } from '../services/coin_service'
 
-const rooms: Room[] = []
-
 export const createRoom = async (roomName: string): Promise<Room> => {
   const roomConfig = Data.rooms[roomName]
   if (roomConfig === undefined) {
@@ -13,15 +11,17 @@ export const createRoom = async (roomName: string): Promise<Room> => {
     name: roomName,
     coins: await generateCoins(roomName)
   }
-  rooms.push(room)
+  await redis.set(`room:${roomName}`, JSON.stringify({ name: roomName }))
   return room
 }
 
 export const getRoom = async (roomName: string): Promise<Room | undefined> => {
-  const room = rooms.find((r) => r.name === roomName)
-  if (room !== undefined) {
+  const roomStr = await redis.get(`room:${roomName}`)
+  if (roomStr !== null) {
+    const room: Room = JSON.parse(roomStr)
     const coins = await redis.get(`room:${roomName}:coins`)
     room.coins = coins === null ? [] : JSON.parse(coins)
+    return room
   }
-  return room
+  return undefined
 }
