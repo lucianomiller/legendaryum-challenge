@@ -12,13 +12,13 @@ configureSockets(io)
 
 app.use('/', apiRoutes)
 
-const PORT_SOCKET = 3000
-const PORT_API = 3001
+const SOCKET_PORT = process.env.SOCKET_PORT ?? 3000
+const API_PORT = process.env.API_PORT ?? 3001
 
-server.listen(PORT_SOCKET, () => {
-  console.log(`Server is running on port ${PORT_SOCKET}`)
+server.listen(SOCKET_PORT, () => {
+  console.log(`Socket server is running on port ${SOCKET_PORT}`)
 })
 
-app.listen(PORT_API, () => {
-  console.log(`API Server is running on port ${PORT_API}`)
+app.listen(API_PORT, () => {
+  console.log(`API Server is running on port ${API_PORT}`)
 })
