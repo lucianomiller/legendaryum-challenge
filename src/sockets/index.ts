@@ -13,9 +13,27 @@ export const configureSockets = (io: Server): void => {
           room = await createRoom(roomName)
           await socket.join(roomName)
         }
-        socket.emit('roomJoined', room)
+        socket.emit('roomData', room)
+        const usersInRoom: undefined | number = io.sockets.adapter.rooms.get(roomName)?.size
+        io.to(roomName).emit('playersChange', { id: socket.id, usersInRoom, joined: true })
       } catch (error: any) {
         socket.emit('error', error.message)
+      }
+    })
+
+    socket.on('leaveRoom', async (): Promise<void> => {
+      let roomName: string | undefined
+      const allRooms = io.sockets.adapter.rooms
+      for (const [roomN, room] of allRooms.entries()) {
+        if (room.has(socket.id)) {
+          roomName = roomN
+          break
+        }
+      }
+      if (roomName !== undefined) {
+        await socket.leave(roomName)
+        const usersInRoom: undefined | number = io.sockets.adapter.rooms.get(roomName)?.size
+        io.to(roomName).emit('playersChange', { id: socket.id, usersInRoom, joined: false })
       }
     })
 
@@ -24,13 +42,20 @@ export const configureSockets = (io: Server): void => {
         const { roomId, coinId } = data
         const grabbedCoin = await grabCoin(roomId, coinId)
         if (grabbedCoin !== null) {
-          io.to(roomId).emit('coinGrabbed', grabbedCoin)
+          const room = await getRoom(roomId)
+          io.to(roomId).emit('roomData', room)
+          socket.to(roomId).emit('coinGrabbed', grabbedCoin)
         } else {
           socket.emit('error', 'Coin or room not found')
         }
       } catch (error) {
         socket.emit('error', error)
       }
+    })
+
+    socket.on('timeout', async (roomId: string): Promise<void> => {
+      const room = await getRoom(roomId)
+      io.to(roomId).emit('roomData', room)
     })
   })
 }

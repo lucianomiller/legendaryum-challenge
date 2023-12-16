@@ -6,7 +6,8 @@ import { getTtl } from '../services/coin_service'
 const apiRoutes = express.Router()
 
 apiRoutes.get('/rooms', (_req, res) => {
-  res.send(Data.rooms)
+  const roomsArray = Object.entries(Data.rooms).map(([key, value]) => ({ ...value, id: key }))
+  res.send(roomsArray)
 })
 
 /* eslint-disable */

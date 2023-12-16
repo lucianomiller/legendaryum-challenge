@@ -1,5 +1,8 @@
 import { Data, redis } from '../config'
 import { Coin } from '../models/coin'
+import socketIOClient from 'socket.io-client'
+
+const socket = socketIOClient('http://localhost:3000')
 
 export const generateCoins = async (roomName: string): Promise<Coin[]> => {
   const coins: Coin[] = []
@@ -27,6 +30,7 @@ export const generateCoins = async (roomName: string): Promise<Coin[]> => {
     await redis.setex(`room:${roomName}:coins`, 60 * 60, JSON.stringify(coins))
     setTimeout(() => {
       generateCoins(roomName).catch((err) => console.error(err))
+      socket.emit('timeout', roomName)
     }, 60 * 60 * 1000)
   } catch (err) {
     console.error(err)

@@ -3,12 +3,18 @@ import http from 'http'
 import { Server } from 'socket.io'
 import { configureSockets } from './sockets/index'
 import apiRoutes from './routes/api_routes'
-
+import cors from 'cors'
 const app = express()
 const server = http.createServer(app)
-const io = new Server(server)
+const io = new Server(server, {
+  cors: {
+    origin: '*'
+  }
+})
 
 configureSockets(io)
+
+app.use(cors()) // Add CORS middleware
 
 app.use('/', apiRoutes)
 
